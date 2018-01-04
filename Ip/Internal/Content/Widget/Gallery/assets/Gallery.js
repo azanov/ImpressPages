@@ -46,18 +46,22 @@ var IpWidget_Gallery = function () {
 
 
         var $list = this.$widgetObject.find('._container');
-        $list.sortable();
+        $list.sortable({
+            connectWith: '.ipWidget-Gallery ._container'
+        });
         $list.disableSelection();
         $list.on("sortstart", function (event, ui) {
             currentScope.dragItemOriginalPosition = $(ui.item).index();
             $.proxy(currentScope.blurImage, currentScope)();
         });
         $list.on("sortstop", function (event, ui) {
-            var data = {};
+            var data = {}, $item = $(ui.item);
             data.method = 'move';
+            data.sourceWidgetId = currentScope.$widgetObject.data('widgetid');
+            data.targetWidgetId = $item.closest('.ipWidget').data('widgetid');
             data.originalPosition = currentScope.dragItemOriginalPosition;
-            data.newPosition = $(ui.item).index();
-            if (data.newPosition != data.originalPosition) {
+            data.newPosition = $item.index();
+            if (data.newPosition != data.originalPosition || data.targetWidgetId != data.sourceWidgetId) {
                 currentScope.$widgetObject.save(data, true);
             } else {
                 //display image controls

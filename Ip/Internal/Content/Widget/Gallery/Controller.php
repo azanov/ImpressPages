@@ -5,6 +5,9 @@
  */
 namespace Ip\Internal\Content\Widget\Gallery;
 
+use Ip\Internal\Content\Model;
+
+
 
 class Controller extends \Ip\WidgetController
 {
@@ -35,9 +38,26 @@ class Controller extends \Ip\WidgetController
                     }
 
                     $movedImage = $currentData['images'][$originalPosition];
-                    unset($currentData['images'][$originalPosition]);
-                    array_splice($currentData['images'], $newPosition, 0, array($movedImage));
+
+                    $sourceWidgetId = $postData['sourceWidgetId'];
+                    $targetWidgetId = $postData['targetWidgetId'];
+
+                    if ($sourceWidgetId == $targetWidgetId) {
+                        unset($currentData['images'][$originalPosition]);
+                        array_splice($currentData['images'], $newPosition, 0, array($movedImage));
+                    } else {
+                         $targetWidgetRecord = Model::getWidgetRecord($targetWidgetId);
+
+                         if ($targetWidgetRecord) {
+                             array_splice($targetWidgetRecord['data']['images'], $newPosition, 0, array($movedImage));
+                             unset($currentData['images'][$originalPosition]);
+                         }
+
+                         Model::updateWidget($targetWidgetId, array('data' => $targetWidgetRecord['data']));
+                    }
+
                     return $currentData;
+
                 case 'add':
                     if (!isset($postData['images']) || !is_array($postData['images'])) {
                         throw new \Ip\Exception("Missing required parameter");
